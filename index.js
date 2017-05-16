@@ -13,7 +13,10 @@ errie.link = function(oldError, newError) {
   else if (!newError.IS_ERRIE) newError = new errors.Errie(newError);
 
   if (!oldError) return newError;
-  if (!oldError.IS_ERRIE) oldError = new errors.Errie(oldError);
+  if (!oldError.IS_ERRIE) {
+    newError.history.unshift(oldError);
+    return newError;
+  }
 
   oldError.history.push(newError.history[0]);
 
