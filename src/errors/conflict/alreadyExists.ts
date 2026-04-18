@@ -1,18 +1,14 @@
-// Types
-import { ErrieConfig } from 'types';
+import type { ErrieConfig } from '../../types.js';
 
-import ConflictError from './conflict';
+import ConflictError from './conflict.js';
 
-/**
- *
- */
 class AlreadyExistsError extends ConflictError {
   constructor(config?: ErrieConfig | string) {
     const structuredConfig: ErrieConfig = {
       message: 'Already exists.',
-      ...(config ? (typeof config === 'string' ? { message: config } : config) : {}),
+      ...(typeof config === 'string' ? { message: config } : config ?? {}),
     };
-    
+
     super(structuredConfig);
   }
 }

@@ -1,66 +1,74 @@
-// Types
-import { ErrieConfig } from './types';
+import type { ErrieConfig } from './types.js';
 
-import { Errie } from '@/errie';
+import { Errie } from './errie.js';
+import AlreadyExistsError from './errors/conflict/alreadyExists.js';
+import ConflictError from './errors/conflict/conflict.js';
+import DatabaseError from './errors/unknown/database.js';
+import ForbiddenError from './errors/permission/forbidden.js';
+import InsufficientStorageError from './errors/insufficientStorage/insufficientStorage.js';
+import InvalidCredentialsError from './errors/permission/invalidCredentials.js';
+import NoDataError from './errors/validation/noData.js';
+import NoneFoundError from './errors/notFound/noneFound.js';
+import NotFoundError from './errors/notFound/notFound.js';
+import PermissionError from './errors/permission/permission.js';
+import RequiredAttributeError from './errors/validation/requiredAttributeError.js';
+import TooManyRequestsError from './errors/tooManyRequests/tooManyRequests.js';
+import UnauthorizedError from './errors/permission/unauthorized.js';
+import UnknownError from './errors/unknown/unknown.js';
+import ValidationError from './errors/validation/validation.js';
 
-import AlreadyExistsError from './errors/conflict/alreadyExists';
-import ConflictError from './errors/conflict/conflict';
-import DatabaseError from './errors/unknown/database';
-import ForbiddenError from './errors/permission/forbidden';
-import InsufficientStorageError from './errors/insufficientStorage/insufficientStorage';
-import InvalidCredentialsError from './errors/permission/invalidCredentials';
-import NoDataError from './errors/validation/noData';
-import NoneFoundError from './errors/notFound/noneFound';
-import NotFoundError from './errors/notFound/notFound';
-import PermissionError from './errors/permission/permission';
-import RequiredAttributeError from './errors/validation/requiredAttributeError';
-import TooManyRequestsError from './errors/tooManyRequests/tooManyRequests';
-import UnauthorizedError from './errors/permission/unauthorized';
-import UnknownError from './errors/unknown/unknown';
-import ValidationError from './errors/validation/validation';
+type LinkableError = Error | Errie;
+type NextErrorInput = ErrieConfig | Errie;
 
+function isErrie(value: unknown): value is Errie {
+  return Boolean(value && typeof value === 'object' && 'IS_ERRIE' in value);
+}
 
+function createNextError(newError?: NextErrorInput): Errie {
+  if (!newError) {
+    return new UnknownError();
+  }
 
+  return isErrie(newError) ? newError : new Errie(newError);
+}
 
+export function link(error?: LinkableError, newError?: NextErrorInput): Errie {
+  const nextError = createNextError(newError);
 
-
-export default {
-  /**
-   *
-   */
-  link: (error: Error | Errie, newError?: ErrieConfig | Errie) => {
-    const nextError = newError ? (('IS_ERRIE' in newError) ? newError : new Errie(newError)): new UnknownError();
-    if (!error) return nextError;
-
-    if (!('IS_ERRIE' in error)) {
-      nextError.history.unshift(error);
-      return nextError;
-    }
-
-    error.history = [ ...error.history, ...nextError.history ];
-
-    return error;
-  },
-  /**
-   *
-   */
-  linkAndReplace: (error: Error | Errie, newError?: ErrieConfig | Errie) => {
-    const nextError = newError ? (('IS_ERRIE' in newError) ? newError : new Errie(newError)): new UnknownError();
-  
-    if (!error) return nextError;
-    if (!('IS_ERRIE' in error)) {
-      nextError.history.unshift(error);
-      return nextError;
-    }
-  
-    nextError.history = [ ...error.history, ...nextError.history ];
+  if (!error) {
     return nextError;
-  },
+  }
 
-  Errie,
+  if (!isErrie(error)) {
+    nextError.history.unshift(error);
+    return nextError;
+  }
+
+  error.history = [...error.history, ...nextError.history];
+  return error;
+}
+
+export function linkAndReplace(error?: LinkableError, newError?: NextErrorInput): Errie {
+  const nextError = createNextError(newError);
+
+  if (!error) {
+    return nextError;
+  }
+
+  if (!isErrie(error)) {
+    nextError.history.unshift(error);
+    return nextError;
+  }
+
+  nextError.history = [...error.history, ...nextError.history];
+  return nextError;
+}
+
+export {
   AlreadyExistsError,
   ConflictError,
   DatabaseError,
+  Errie,
   ForbiddenError,
   InsufficientStorageError,
   InvalidCredentialsError,
@@ -74,3 +82,5 @@ export default {
   UnknownError,
   ValidationError,
 };
+
+export type { ErrieConfig };

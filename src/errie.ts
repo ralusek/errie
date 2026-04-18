@@ -1,53 +1,48 @@
-// Types
-import { ErrieConfig } from './types';
+import type { ErrieConfig } from './types.js';
 
-/**
- * 
- */
+export type ErrieHistoryItem = Errie | Error;
+export type ErrieDumpEntry = ErrieHistoryItem | string[] | undefined;
+
 export class Errie extends Error {
   public readonly status!: number;
   public readonly timestamp!: number;
   public readonly IS_ERRIE!: boolean;
-
-  public history!: (Errie | Error)[];
+  public history!: ErrieHistoryItem[];
 
   constructor(config?: ErrieConfig | string) {
-    const structuredConfig: ErrieConfig = config ? (typeof config === 'string' ? { message: config } : config) : {};
+    const structuredConfig: ErrieConfig =
+      typeof config === 'string' ? { message: config } : config ?? {};
+    const message = structuredConfig.message ?? 'Unknown error.';
 
-    const message = structuredConfig.message || 'Unknown error.';
     super(message);
-    this.message = message;
 
-    if (structuredConfig.stack) this.stack = structuredConfig.stack;
-    // @ts-ignore
-    else if (typeof Error.captureStackTrace === 'function') {
-      // @ts-ignore
+    if (structuredConfig.stack) {
+      this.stack = structuredConfig.stack;
+    } else if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
-    } else { 
-      this.stack = (new Error(message)).stack; 
+    } else {
+      this.stack = new Error(message).stack;
     }
 
     Object.defineProperty(this, 'name', { value: this.constructor.name });
     Object.defineProperty(this, 'timestamp', { value: Date.now() });
-    Object.defineProperty(this, 'status', { value:  structuredConfig.status || 500 });
+    Object.defineProperty(this, 'status', { value: structuredConfig.status ?? 500 });
     Object.defineProperty(this, 'history', {
       writable: true,
       enumerable: false,
-      value: [this]
-    });    
-
+      value: [this],
+    });
     Object.defineProperty(this, 'IS_ERRIE', { value: true });
   }
 
-  /**
-   *
-   */
-  dump() {
-    const output = [];
-    for (let i = this.history.length - 1; i > -1; i--) {
-      output.push(this.history[i]);
+  dump(): ErrieDumpEntry[] {
+    const output: ErrieDumpEntry[] = [];
+
+    for (let index = this.history.length - 1; index >= 0; index -= 1) {
+      output.push(this.history[index]);
     }
-    output.push(this.history[0].stack && this.history[0].stack.split(/\n+/));
+
+    output.push(this.history[0]?.stack?.split(/\n+/));
     return output;
   }
 }

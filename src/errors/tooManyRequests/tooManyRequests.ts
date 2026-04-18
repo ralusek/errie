@@ -1,19 +1,15 @@
-// Types
-import { ErrieConfig } from 'types';
+import type { ErrieConfig } from '../../types.js';
 
-import { Errie } from '@/errie';
+import { Errie } from '../../errie.js';
 
-/**
- *
- */
 class TooManyRequestsError extends Errie {
   constructor(config?: ErrieConfig | string) {
     const structuredConfig: ErrieConfig = {
       message: 'Too Many Requests.',
       status: 429,
-      ...(config ? (typeof config === 'string' ? { message: config } : config) : {}),
+      ...(typeof config === 'string' ? { message: config } : config ?? {}),
     };
-    
+
     super(structuredConfig);
   }
 }

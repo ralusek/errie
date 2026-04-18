@@ -1,18 +1,14 @@
-// Types
-import { ErrieConfig } from 'types';
+import type { ErrieConfig } from '../../types.js';
 
-import NotFoundError from './notFound';
+import NotFoundError from './notFound.js';
 
-/**
- *
- */
 class NoneFoundError extends NotFoundError {
   constructor(config?: ErrieConfig | string) {
     const structuredConfig: ErrieConfig = {
       message: 'None found.',
-      ...(config ? (typeof config === 'string' ? { message: config } : config) : {}),
+      ...(typeof config === 'string' ? { message: config } : config ?? {}),
     };
-    
+
     super(structuredConfig);
   }
 }

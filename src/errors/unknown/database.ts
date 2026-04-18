@@ -1,18 +1,14 @@
-// Types
-import { ErrieConfig } from 'types';
+import type { ErrieConfig } from '../../types.js';
 
-import UnknownError from './unknown';
+import UnknownError from './unknown.js';
 
-/**
- *
- */
 class DatabaseError extends UnknownError {
   constructor(config?: ErrieConfig | string) {
     const structuredConfig: ErrieConfig = {
       message: 'Database error.',
-      ...(config ? (typeof config === 'string' ? { message: config } : config) : {}),
+      ...(typeof config === 'string' ? { message: config } : config ?? {}),
     };
-    
+
     super(structuredConfig);
   }
 }

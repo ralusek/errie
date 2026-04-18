@@ -1,102 +1,50 @@
-import 'mocha';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 
-import errie from '../lib';
+import {
+  AlreadyExistsError,
+  ConflictError,
+  DatabaseError,
+  Errie,
+  ForbiddenError,
+  InsufficientStorageError,
+  InvalidCredentialsError,
+  NoDataError,
+  NoneFoundError,
+  NotFoundError,
+  PermissionError,
+  RequiredAttributeError,
+  TooManyRequestsError,
+  UnauthorizedError,
+  UnknownError,
+  ValidationError,
+} from '../src/index.js';
+
+type ErrorConstructor = new () => { status: number; message: string };
+
+const cases: Array<[ErrorConstructor, number, string]> = [
+  [Errie, 500, 'Unknown error.'],
+  [AlreadyExistsError, 409, 'Already exists.'],
+  [ConflictError, 409, 'Conflict.'],
+  [InsufficientStorageError, 507, 'Insufficient storage.'],
+  [NotFoundError, 404, 'Not found.'],
+  [NoneFoundError, 404, 'None found.'],
+  [ForbiddenError, 401, 'Forbidden.'],
+  [InvalidCredentialsError, 401, 'Invalid credentials.'],
+  [PermissionError, 401, 'Unspecified permission error.'],
+  [UnauthorizedError, 401, 'Unauthorized.'],
+  [TooManyRequestsError, 429, 'Too Many Requests.'],
+  [DatabaseError, 500, 'Database error.'],
+  [UnknownError, 500, 'Unknown error.'],
+  [NoDataError, 400, 'No data provided.'],
+  [RequiredAttributeError, 400, 'Missing required attribute(s).'],
+  [ValidationError, 400, 'Validation error.'],
+];
 
 describe('Instantiation', () => {
-  it('Instantiate Errie as expected.', () => {
-    const error = new errie.Errie();
-    expect(error).to.nested.include({ status: 500 });
-    expect(error).to.nested.include({ message: 'Unknown error.' });
-  });
+  it.each(cases)('instantiates %p as expected', (ErrorClass, status, message) => {
+    const error = new ErrorClass();
 
-  it('Instantiate AlreadyExistsError as expected.', () => {
-    const error = new errie.AlreadyExistsError();
-    expect(error).to.nested.include({ status: 409 });
-    expect(error).to.nested.include({ message: 'Already exists.' });
-  });
-
-  it('Instantiate ConflictError as expected.', () => {
-    const error = new errie.ConflictError();
-    expect(error).to.nested.include({ status: 409 });
-    expect(error).to.nested.include({ message: 'Conflict.' });
-  });
-
-  it('Instantiate InsufficientStorageError as expected.', () => {
-    const error = new errie.InsufficientStorageError();
-    expect(error).to.nested.include({ status: 507 });
-    expect(error).to.nested.include({ message: 'Insufficient storage.' });
-  });
-
-  it('Instantiate NotFoundError as expected.', () => {
-    const error = new errie.NotFoundError();
-    expect(error).to.nested.include({ status: 404 });
-    expect(error).to.nested.include({ message: 'Not found.' });
-  });
-
-  it('Instantiate NoneFoundError as expected.', () => {
-    const error = new errie.NoneFoundError();
-    expect(error).to.nested.include({ status: 404 });
-    expect(error).to.nested.include({ message: 'None found.' });
-  });
-
-  it('Instantiate ForbiddenError as expected.', () => {
-    const error = new errie.ForbiddenError();
-    expect(error).to.nested.include({ status: 401 });
-    expect(error).to.nested.include({ message: 'Forbidden.' });
-  });
-
-  it('Instantiate InvalidCredentialsError as expected.', () => {
-    const error = new errie.InvalidCredentialsError();
-    expect(error).to.nested.include({ status: 401 });
-    expect(error).to.nested.include({ message: 'Invalid credentials.' });
-  });
-
-  it('Instantiate PermissionError as expected.', () => {
-    const error = new errie.PermissionError();
-    expect(error).to.nested.include({ status: 401 });
-    expect(error).to.nested.include({ message: 'Unspecified permission error.' });
-  });
-
-  it('Instantiate UnauthorizedError as expected.', () => {
-    const error = new errie.UnauthorizedError();
-    expect(error).to.nested.include({ status: 401 });
-    expect(error).to.nested.include({ message: 'Unauthorized.' });
-  });
-
-  it('Instantiate TooManyRequestsError as expected.', () => {
-    const error = new errie.TooManyRequestsError();
-    expect(error).to.nested.include({ status: 429 });
-    expect(error).to.nested.include({ message: 'Too Many Requests.' });
-  });
-
-  it('Instantiate DatabaseError as expected.', () => {
-    const error = new errie.DatabaseError();
-    expect(error).to.nested.include({ status: 500 });
-    expect(error).to.nested.include({ message: 'Database error.' });
-  });
-
-  it('Instantiate UnknownError as expected.', () => {
-    const error = new errie.UnknownError();
-    expect(error).to.nested.include({ status: 500 });
-    expect(error).to.nested.include({ message: 'Unknown error.' });
-  });
-
-  it('Instantiate NoDataError as expected.', () => {
-    const error = new errie.NoDataError();
-    expect(error).to.nested.include({ status: 400 });
-    expect(error).to.nested.include({ message: 'No data provided.' });
-  });
-
-  it('Instantiate RequiredAttributeError as expected.', () => {
-    const error = new errie.RequiredAttributeError();
-    expect(error).to.nested.include({ status: 400 });
-    expect(error).to.nested.include({ message: 'Missing required attribute(s).' });
-  });
-
-  it('Instantiate ValicationError as expected.', () => {
-    const error = new errie.ValidationError();
-    expect(error).to.nested.include({ status: 400 });
-    expect(error).to.nested.include({ message: 'Validation error.' });
+    expect(error.status).toBe(status);
+    expect(error.message).toBe(message);
   });
 });

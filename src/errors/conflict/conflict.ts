@@ -1,19 +1,15 @@
-// Types
-import { ErrieConfig } from 'types';
+import type { ErrieConfig } from '../../types.js';
 
-import { Errie } from '@/errie';
+import { Errie } from '../../errie.js';
 
-/**
- *
- */
 class ConflictError extends Errie {
   constructor(config?: ErrieConfig | string) {
     const structuredConfig: ErrieConfig = {
       message: 'Conflict.',
       status: 409,
-      ...(config ? (typeof config === 'string' ? { message: config } : config) : {}),
+      ...(typeof config === 'string' ? { message: config } : config ?? {}),
     };
-    
+
     super(structuredConfig);
   }
 }
